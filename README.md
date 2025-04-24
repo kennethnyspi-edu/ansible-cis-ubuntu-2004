@@ -1,9 +1,9 @@
-# CIS - Ubuntu 22.04
+# CIS - Ubuntu 20.04
 
 [![Ansible Lint](https://github.com/MVladislav/ansible-cis-ubuntu-2204/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/MVladislav/ansible-cis-ubuntu-2204/actions/workflows/ansible-lint.yml)
 [![Ansible Molecule Test](https://github.com/MVladislav/ansible-cis-ubuntu-2204/actions/workflows/ci.yml/badge.svg)](https://github.com/MVladislav/ansible-cis-ubuntu-2204/actions/workflows/ci.yml)
 
-- [CIS - Ubuntu 22.04](#cis---ubuntu-2204)
+- [CIS - Ubuntu 20.04](#cis---ubuntu-2204)
   - [Notes](#notes)
   - [Requirements](#requirements)
   - [Role Variables](#role-variables)
