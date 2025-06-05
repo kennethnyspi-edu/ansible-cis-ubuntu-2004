@@ -1,11 +1,11 @@
 ---
 galaxy_info:
   author: MVladislav
-  description: Ansible role for config CIS recommendation for ubuntu 22.04
+  description: Ansible role for config CIS recommendation for ubuntu 20.04
   company: none
   license: MIT
   min_ansible_version: "2.14"
-  role_name: cis_ubuntu_2204
+  role_name: cis_ubuntu_2004
   namespace: mvladislav
 
   platforms:
