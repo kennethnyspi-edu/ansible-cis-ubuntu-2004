@@ -592,7 +592,7 @@
     - passwd
   block:
     - name: "SECTION1 | 1.4.3 | Get current root password hash from /etc/shadow"
-      ansible.builtin.command: awk -F: '$1 == "root" { print $2 }' /etc/shadow
+      ansible.builtin.command: "awk -F: '$1 == \"root\" { print $2 }' /etc/shadow"
       register: root_shadow_password
       changed_when: false
       check_mode: false
