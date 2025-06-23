@@ -383,6 +383,39 @@ cis_ubuntu2004_warning_banner: Authorized users only. All activity may be monito
 # false means you do not require a desktop
 cis_ubuntu2004_desktop_required: false
 
+# Control 2.1.2.1 2.1.3.1
+# Time settings used for all versions
+cis_ubuntu2004_time_pool:
+    - name: time.nist.gov
+      options: iburst maxsources 4
+
+# Service config variables 2.2.2
+cis_ubuntu2004_avahi_server: false
+cis_ubuntu2004_dhcp_server: false
+cis_ubuntu2004_ldap_server: false
+cis_ubuntu2004_nfs_server: false
+cis_ubuntu2004_dns_server: false
+cis_ubuntu2004_vsftpd_server: false
+cis_ubuntu2004_httpd_server: false
+cis_ubuntu2004_dovecot_server: false
+cis_ubuntu2004_smb_server: false
+cis_ubuntu2004_squid_server: false
+cis_ubuntu2004_snmp_server: false
+cis_ubuntu2004_nis_server: false
+cis_ubuntu2004_dnsmasq_server: false
+cis_ubuntu2004_is_mail_server: false
+cis_ubuntu2004_rsync_server: mask # Can be set to true, mask or remove depending on requirements
+
+# Clients in use variables
+cis_ubuntu2004_nis_required: false
+cis_ubuntu2004_rsh_required: false
+cis_ubuntu2004_talk_required: false
+cis_ubuntu2004_telnet_required: false
+cis_ubuntu2004_ldap_clients_required: false
+cis_ubuntu2004_is_router: false
+# rpcbind is required by nfs-common which is required on client and server
+cis_ubuntu2004_rpc_required: "{{ cis_ubuntu2004_nfs_server or cis_ubuntu2004_nfs_client }}"
+
 # choose time synchronization (cis_ubuntu2004_rule_2_3_1_1)
 cis_ubuntu2004_time_synchronization_service: chrony # chrony | systemd-timesyncd
 cis_ubuntu2004_time_synchronization_time_server:

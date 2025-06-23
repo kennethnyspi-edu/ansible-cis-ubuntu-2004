@@ -1,326 +1,721 @@
 ---
-# tasks file for ansible-cis-ubuntu-2204
+# tasks file for ansible-cis-ubuntu-2004
 
 # ------------------------------------------------------------------------------
 
-- name: "SECTION2 | 2.1.1-20 | Multi server services check for stop and purge if rule is enabled"
-  ansible.builtin.include_tasks: sub-task-services-clean.yml
-  loop: "{{ cis_ubuntu2204_2_1_rule_set | flatten(levels=1) }}"
-  loop_control:
-    loop_var: outer_item
-  when: outer_item.remove | bool or outer_item.disable | bool
-  tags:
-    - rule_2_1
-    - server_l1
-    - workstation_l1
-    - workstation_l2
+- name: "SECTION2 | 2.1.1.1 | Ensure a single time synchronization daemon is in use"
+  block:
+      - name: "SECTION2 | 2.1.1.1 | Ensure a single time synchronization daemon is in use | Pkg installed"
+        ansible.builtin.package:
+            name: "{{ cis_ubuntu2004_time_synchronization_service }}"
+            state: present
 
-- name: "SECTION2 | 2.1.21 | Ensure mail transfer agent is configured for local-only mode"
+      - name: "SECTION2 | 2.1.1.1 | Ensure a single time synchronization daemon is in use | other pkgs removed"
+        ansible.builtin.package:
+            name: "{{ item }}"
+            state: absent
+        loop:
+            - chrony
+            - ntp
+        when: item != cis_ubuntu2004_time_synchronization_service
+
+      - name: "SECTION2 | 2.1.1.1 | Ensure a single time synchronization daemon is in use | mask service"
+        ansible.builtin.service:
+            name: systemd-timesyncd.service
+            state: stopped
+            enabled: false
+            masked: true
+        when:
+            - cis_ubuntu2004_time_synchronization_service != "systemd-timesyncd"
+            - "'systemd-timesyncd' in ansible_facts.packages"
+  when:
+      - cis_ubuntu2004_rule_2_1_1_1
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.1.1.1
+      - chrony
+      - ntp
+      - systemd-timesyncd
+
+# ------------------------------------------------------------------------------
+
+- name: "SECTION2 | 2.1.2.1 | Ensure chrony is configured with authorized timeserver"
+  block:
+      - name: "SECTION2 | 2.1.2.1 | Ensure chrony is configured with authorized timeserver | ensure source dir exists"
+        ansible.builtin.file:
+            path: /etc/chrony/sources.d
+            state: directory
+            owner: root
+            group: root
+            mode: '0755'
+
+      - name: "SECTION2 | 2.1.2.1 | Ensure chrony is configured with authorized timeserver | sources"
+        ansible.builtin.template:
+            src: "{{ item }}.j2"
+            dest: "/{{ item }}"
+            mode: 0644
+            owner: root
+            group: root
+        loop:
+            - 'etc/chrony/sources.d/time.sources'
+        notify: restart timeservice
+
+      - name: "SECTION2 | 2.1.2.1 | Ensure chrony is configured with authorized timeserver | remove current sources in .conf"
+        ansible.builtin.replace:
+            path: /etc/chrony/chrony.conf
+            regexp: '^(server.*|pool.*)'
+            replace: '#\1'
+        notify: restart timeservice
+
+      - name: "SECTION2 | 2.1.2.1 | Ensure chrony is configured with authorized timeserver | load sources"
+        ansible.builtin.lineinfile:
+            path: /etc/chrony/chrony.conf
+            regexp: '^include /etc/chrony/sources.d.*'
+            line: include /etc/chrony/sources.d/time.sources
+        notify: restart timeservice
+  when:
+      - cis_ubuntu2004_rule_2_1_2_1
+  tags:
+      - level1-server
+      - level1-workstation
+      - patch
+      - rule_2.1.2.1
+      - chrony
+
+- name: "SECTION2 | 2.1.2.2 | Ensure chrony is running as user _chrony"
   ansible.builtin.lineinfile:
-    dest: /etc/postfix/main.cf
-    regexp: "{{ cis_ubuntu2204_regex_base_search }}inet_interfaces{{ cis_ubuntu2204_regex_base_search_equals }}"
-    line: "inet_interfaces = loopback-only"
-    state: present
-    create: true
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_default }}"
+      path: /etc/chrony/chrony.conf
+      regexp: '^user _chrony'
+      line: 'user _chrony'
   when:
-    - cis_ubuntu2204_rule_2_1_21
-    - package_installed_postfix.rc == 0
+      - cis_ubuntu2004_rule_2_1_2_2
   tags:
-    - rule_2_1
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - patch
+      - rule_2.1.2.2
+      - chrony
 
-- name: "SECTION2 | 2.1.22 | Ensure only approved services are listening on a network interface"
+- name: "SECTION2 | 2.1.2.3 | Ensure chrony is enabled and running"
+  ansible.builtin.systemd:
+      name: chrony
+      state: started
+      enabled: true
   when:
-    - cis_ubuntu2204_rule_2_1_22
+      - cis_ubuntu2004_rule_2_1_2_3
   tags:
-    - rule_2_1
-    - server_l1
-    - workstation_l1
-  block:
-    - name: "SECTION2 | 2.1.22 | Ensure only approved services are listening on a network interface | gather info"
-      ansible.builtin.shell: "set -o pipefail && ss -plntu"
-      args:
-        executable: "{{ cis_ubuntu2204_shell_executable }}"
-      register: cis_ubuntu2204_services_listening_on_network_interface
-      changed_when: false
-      failed_when: false
-      check_mode: false
-    - name: "SECTION2 | 2.1.22 | Ensure only approved services are listening on a network interface | print info"
-      ansible.builtin.debug:
-        msg: |
-          #############################################################################################
-          Run the following command:
-          # `ss -plntu`
-          Review the output to ensure:
-
-          - All services listed are required on the system and approved by local site policy.
-          - Both the port and interface the service is listening on are approved by local site policy.
-          - If a listed service is not required:
-            - Remove the package containing the service
-            - -IF- the service's package is required for a dependency, stop and mask the service and/or socket
-          #############################################################################################
-          {{ cis_ubuntu2204_services_listening_on_network_interface.stdout_lines | join(cis_ubuntu2204_print_info_join_by) }}
-          #############################################################################################
-      when:
-        - cis_ubuntu2204_services_listening_on_network_interface.stdout_lines is defined
-        - cis_ubuntu2204_services_listening_on_network_interface.stdout_lines | length > 0
+      - level1-server
+      - level1-workstation
+      - rule_2.1.2.3
+      - chrony
 
 # ------------------------------------------------------------------------------
 
-- name: "SECTION2 | 2.2.1-6 | Multi client services check for purge if rule is enabled"
-  ansible.builtin.apt:
-    name: "{{ item.apt }}"
-    state: absent
-    purge: true
-  loop: "{{ cis_ubuntu2204_2_2_rule_set | flatten(levels=1) }}"
+- name: "SECTION2 | 2.1.3.1 | Ensure systemd-timesyncd configured with authorized timeserver"
+  block:
+      - name: "SECTION2 | 2.1.3.1 | Ensure systemd-timesyncd configured with authorized timeserver | conf directory"
+        ansible.builtin.file:
+            path: /etc/systemd/timesyncd.conf.d
+            state: directory
+            owner: root
+            group: root
+            mode: 0755
+
+      - name: "SECTION2 | 2.1.3.1 | Ensure systemd-timesyncd configured with authorized timeserver | sources"
+        ansible.builtin.template:
+            src: "{{ item }}.j2"
+            dest: "/{{ item }}"
+            mode: 0644
+            owner: root
+            group: root
+        loop:
+            - "etc/systemd/timesyncd.conf.d/50-timesyncd.conf"
+        notify: restart timeservice
   when:
-    - item.apt is defined
-    - item.remove | bool
+      - cis_ubuntu2004_rule_2_1_3_1
   tags:
-    - rule_2_2
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - patch
+      - rule_2.1.3.1
+      - timesyncd
+
+- name: "SECTION2 | 2.1.3.2 | Ensure systemd-timesyncd is enabled and running"
+  ansible.builtin.systemd:
+      name: systemd-timesyncd
+      state: started
+      enabled: true
+      masked: false
+  when:
+      - cis_ubuntu2004_rule_2_1_3_2
+  tags:
+      - level1-server
+      - level1-workstation
+      - rule_2.1.3.2
+      - timesyncd
 
 # ------------------------------------------------------------------------------
 
-- name: "SECTION2 | 2.3.1.1 | Ensure a single time synchronization daemon is in use"
+- name: "SECTION2 | 2.1.4.1 | Ensure ntp access control is configured "
+  ansible.builtin.lineinfile:
+      path: /etc/ntp.conf
+      regexp: '^(restrict) (|{{ item }}) .*$'
+      line: 'restrict {{ item }} default kod nomodify notrap nopeer noquery'
+  loop:
+      - '-4'
+      - '-6'
+  notify: Restart timeservice
   when:
-    - cis_ubuntu2204_rule_2_3_1_1
+      - cis_ubuntu2004_rule_2_1_4_1
   tags:
-    - rule_2_3
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - patch
+      - rule_2.1.4.1
+      - ntp
+
+- name: "SECTION2 | 2.1.4.2 | Ensure ntp is configured with authorized timeserver"
   block:
-    - name: "SECTION2 | 2.3.1.1 | Ensure a single time synchronization daemon is in use | install service 'chrony | systemd-timesyncd'"
-      ansible.builtin.apt:
-        name: "{{ cis_ubuntu2204_time_synchronization_service }}"
-        state: present
-        force_apt_get: true
-      notify: "restart {{ cis_ubuntu2204_time_synchronization_service }}"
+      - name: "2.1.4.2 | Ensure ntp is configured with authorized timeserver | pool"
+        ansible.builtin.lineinfile:
+            path: /etc/ntp.conf
+            regexp: '^pool.*'
+            line: 'pool {{ item.name }} {{ item.options }}'
+        notify: Restart timeservice
+        loop: "{{ cis_ubuntu2004_time_pool }}"
+        loop_control:
+            label: "{{ item.name }}"
 
-    - name: "SECTION2 | 2.3.1.1 | Ensure a single time synchronization daemon is in use | remove chrony"
-      ansible.builtin.apt:
-        name: chrony
-        state: absent
-        purge: true
-      when: cis_ubuntu2204_time_synchronization_service != "chrony"
-
-    - name: "SECTION2 | 2.3.1.1 | Ensure a single time synchronization daemon is in use | mask systemd-timesyncd"
-      ansible.builtin.systemd_service:
-        name: systemd-timesyncd.service
-        daemon_reload: true
-        enabled: false
-        masked: true
-        state: stopped
-      failed_when: false # NOTE: sometimes throws error
-      when:
-        - cis_ubuntu2204_time_synchronization_service != "systemd-timesyncd"
-        - service_status_systemd_timesyncd.stdout == "loaded"
-
-- name: "SECTION2 | 2.3.2.1 | Ensure systemd-timesyncd configured with authorized timeserver"
-  ansible.builtin.template:
-    src: systemd-timesyncd.conf.j2
-    dest: /etc/systemd/timesyncd.conf
-    mode: "{{ cis_ubuntu2204_section2_mode_default }}"
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-  notify: "restart {{ cis_ubuntu2204_time_synchronization_service }}"
+      - name: "SECTION2 | 2.1.4.2 | Ensure ntp is configured with authorized timeserver | servers"
+        ansible.builtin.lineinfile:
+            path: /etc/ntp.conf
+            insertafter: '^server'
+            line: 'server {{ item.name }} {{ item.options }}'
+        loop: "{{ cis_ubuntu2004_time_servers }}"
+        loop_control:
+            label: "{{ item.name }}"
+        notify: Restart timeservice
   when:
-    - cis_ubuntu2204_rule_2_3_2_1
-    - cis_ubuntu2204_time_synchronization_service == "systemd-timesyncd"
+      - cis_ubuntu2004_rule_2_1_4_2
   tags:
-    - rule_2_3
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - patch
+      - rule_2.1.4.2
+      - ntp
 
-# NOTE: SECTION2 | 2.3.2.2 | Ensure systemd-timesyncd is enabled and running
-##      is done since it is started and enabled default in jobs above, by notify call
-
-- name: "SECTION2 | 2.3.3.1 | Ensure chrony is configured with authorized timeserver"
-  ansible.builtin.template:
-    src: chrony.conf.j2
-    dest: /etc/chrony/chrony.conf
-    mode: "{{ cis_ubuntu2204_section2_mode_default }}"
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-  notify: "restart {{ cis_ubuntu2204_time_synchronization_service }}"
+- name: "SECTION2 | 2.1.4.3 | Ensure ntp is running as user ntp"
+  ansible.builtin.lineinfile:
+      path: /etc/init.d/ntp
+      regexp: '^RUNASUSER.*'
+      line: 'RUNASUSER=ntp'
+  notify: Restart timeservice
   when:
-    - cis_ubuntu2204_rule_2_3_3_1
-    - cis_ubuntu2204_time_synchronization_service == "chrony"
+      - cis_ubuntu2004_rule_2_1_4_3
   tags:
-    - rule_2_3
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - patch
+      - rule_2.1.4.3
+      - ntp
 
-- name: "SECTION2 | 2.3.3.2 | Ensure chrony is running as user _chrony"
-  ansible.builtin.template:
-    src: chrony.conf.j2
-    dest: /etc/chrony/chrony.conf
-    mode: "{{ cis_ubuntu2204_section2_mode_default }}"
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-  notify: "restart {{ cis_ubuntu2204_time_synchronization_service }}"
+- name: "SECTION2 | 2.1.4.4 | Ensure ntp is enabled and running"
+  ansible.builtin.systemd:
+      name: ntp
+      state: started
+      enabled: true
+      masked: false
   when:
-    - cis_ubuntu2204_rule_2_3_3_2
-    - cis_ubuntu2204_time_synchronization_service == "chrony"
+      - cis_ubuntu2004_rule_2_1_4_4
   tags:
-    - rule_2_3
-    - server_l1
-    - workstation_l1
-
-# NOTE: SECTION2 | 2.3.3.2 | Ensure chrony is enabled and running
-##      is done since it is started and enabled default in jobs above, by notify call
+      - level1-server
+      - level1-workstation
+      - rule_2.1.4.4
+      - ntp
 
 # ------------------------------------------------------------------------------
 
-- name: "SECTION2 | 2.4.1.1 | Ensure cron daemon is enabled and active"
-  ansible.builtin.systemd_service:
-    name: cron
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: started
+- name: "SECTION2 | 2.2.1 | Ensure X Window System is not installed"
+  ansible.builtin.package:
+      name: xserver-xorg*
+      state: absent
   when:
-    - cis_ubuntu2204_rule_2_4_1_1
-    - service_status_cron.stdout == "loaded"
+      - cis_ubuntu2004_rule_2_2_1
+      - not cis_ubuntu2004_desktop_required
   tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - automated
+      - patch
+      - rule_2.2.1
+      - xwindows
 
-- name: "SECTION2 | 2.4.1.2 | Ensure permissions on /etc/crontab are configured"
-  ansible.builtin.file:
-    dest: /etc/crontab
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_cron }}"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_2
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
-
-- name: "SECTION2 | 2.4.1.3 | Ensure permissions on /etc/cron.hourly are configured"
-  ansible.builtin.file:
-    dest: /etc/cron.hourly
-    state: directory
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_cron_folder }}"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_3
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
-
-- name: "SECTION2 | 2.4.1.4 | Ensure permissions on /etc/cron.daily are configured"
-  ansible.builtin.file:
-    dest: /etc/cron.daily
-    state: directory
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_cron_folder }}"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_4
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
-
-- name: "SECTION2 | 2.4.1.5 | Ensure permissions on /etc/cron.weekly are configured"
-  ansible.builtin.file:
-    dest: /etc/cron.weekly
-    state: directory
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_cron_folder }}"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_5
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
-
-- name: "SECTION2 | 2.4.1.6 | Ensure permissions on /etc/cron.monthly are configured"
-  ansible.builtin.file:
-    dest: /etc/cron.monthly
-    state: directory
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_cron_folder }}"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_6
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
-
-- name: "SECTION2 | 2.4.1.7 | Ensure permissions on /etc/cron.d are configured"
-  ansible.builtin.file:
-    dest: /etc/cron.d
-    state: directory
-    owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-    group: "{{ cis_ubuntu2204_section2_group_default }}"
-    mode: "{{ cis_ubuntu2204_section2_mode_cron_folder }}"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_7
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
-
-- name: "SECTION2 | 2.4.1.8 | Ensure crontab is restricted to authorized users"
-  when:
-    - cis_ubuntu2204_rule_2_4_1_8
-    - service_status_cron.stdout == "loaded"
-  tags:
-    - rule_2_4_1
-    - server_l1
-    - workstation_l1
+- name: "SECTION2 | 2.2.2 | Ensure Avahi Server is not installed"
   block:
-    - name: "SECTION2 | 2.4.1.8 | Ensure crontab is restricted to authorized users | rm cron.deny"
-      ansible.builtin.file:
-        dest: /etc/cron.deny
-        state: absent
-    - name: "SECTION2 | 2.4.1.8 | Ensure crontab is restricted to authorized users | set cron.allow"
-      ansible.builtin.template:
-        src: cron.allow.j2
-        dest: /etc/cron.allow
-        owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-        group: "{{ cis_ubuntu2204_section2_group_default }}"
-        mode: "{{ cis_ubuntu2204_section2_mode_cron }}"
+      - name: "SECTION2 | 2.2.2 | Ensure Avahi Server is not installed| Stop/Disable avahi-daemon.service"
+        ansible.builtin.service:
+            name: avahi-daemon.service
+            state: stopped
+            enabled: false
+        when: avahi_service_status.stdout == "loaded"
+
+      - name: "SECTION2 | 2.2.2 | Ensure Avahi Server is not installed | Stop/Disable avahi-daemon.socket"
+        ansible.builtin.systemd:
+            name: avahi-daemon.socket
+            state: stopped
+            enabled: false
+        when: avahi_service_status.stdout == "loaded"
+
+      - name: "SECTION2 | 2.2.2 | Ensure Avahi Server is not installed | Remove avahi-daemon"
+        ansible.builtin.package:
+            name: avahi-daemon
+            state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_2
+      - not cis_ubuntu2004_avahi_server
+      #- cis_ubuntu2004_disruption_high
+      - "'avahi' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.2
+      - avahi
+      - services
+
+- name: "SECTION2 | 2.2.3 | Ensure CUPS is not installed"
+  ansible.builtin.package:
+      name: cups
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_3
+      - not cis_ubuntu2004_allow_cups
+      - "'cups' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level2-workstation
+      - automated
+      - patch
+      - rule_2.2.3
+      - cups
+      - services
+
+- name: "SECTION2 | 2.2.4 | Ensure DHCP Server is not installed"
+  ansible.builtin.package:
+      name: isc-dhcp-server
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_4
+      - not cis_ubuntu2004_dhcp_server
+      - "'isc-dhcp-server' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.4
+      - dhcp
+      - services
+
+- name: "SECTION2 | 2.2.5 | Ensure LDAP server is not installed"
+  ansible.builtin.package:
+      name: slapd
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_5
+      - not cis_ubuntu2004_ldap_server
+      - "'slapd' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.5
+      - ldap
+      - services
+
+- name: "SECTION2 | 2.2.6 | Ensure NFS is not installed"
+  ansible.builtin.package:
+      name: nfs-kernel-server
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_6
+      - not cis_ubuntu2004_nfs_server
+      - "'nfs-kernel-server' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.6
+      - nfs
+      - rpc
+      - services
+
+- name: "SECTION2 | 2.2.7 | Ensure DNS Server is not installed"
+  ansible.builtin.package:
+      name: bind9
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_7
+      - not cis_ubuntu2004_dns_server
+      - "'bind9' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.7
+      - dns
+      - service
+
+- name: "SECTION2 | 2.2.8 | Ensure FTP Server is not installed"
+  ansible.builtin.package:
+      name: vsftpd
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_8
+      - not cis_ubuntu2004_vsftpd_server
+      - "'vsftpd' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.8
+      - ftp
+      - service
+
+- name: "SECTION2 | 2.2.9 | Ensure HTTP server is not installed"
+  ansible.builtin.package:
+      name: apache2
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_9
+      - not cis_ubuntu2004_httpd_server
+      - "'apache2' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.9
+      - httpd
+      - service
+
+- name: "SECTION2 | 2.2.10 | Ensure IMAP and POP3 server are not installed"
+  ansible.builtin.package:
+      name: ['dovecot-imapd', 'dovecot-pop3d']
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_10
+      - not cis_ubuntu2004_dovecot_server
+      - "'dovecot-imapd' in ansible_facts.packages or
+        'dovecot-pop3d' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.10
+      - dovecot
+      - service
+
+- name: "SECTION2 | 2.2.11 | Ensure Samba is not installed"
+  ansible.builtin.package:
+      name: samba
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_11
+      - not cis_ubuntu2004_smb_server
+      - "'samba' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.11
+      - samba
+      - service
+
+- name: "SECTION2 | 2.2.12 | Ensure HTTP Proxy Server is not installed"
+  ansible.builtin.package:
+      name: squid
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_12
+      - not cis_ubuntu2004_squid_server
+      - "'squid' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.12
+      - http_proxy
+      - service
+
+- name: "SECTION2 | 2.2.13 | Ensure SNMP Server is not installed"
+  ansible.builtin.package:
+      name: snmpd
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_13
+      - not cis_ubuntu2004_snmp_server
+      - "'snmpd' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.13
+      - snmp
+      - service
+
+- name: "SECTION2 | 2.2.14 | Ensure NIS Server is not installed"
+  ansible.builtin.package:
+      name: nis
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_14
+      - not cis_ubuntu2004_nis_server
+      - "'nis' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - rule_2.2.14
+      - nis
+      - service
+
+- name: "SECTION2 | 2.2.15 | Ensure dnsmasq service is not installed"
+  ansible.builtin.package:
+      name: dnsmasq
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_2_15
+      - not cis_ubuntu2004_dnsmasq_server
+      - "'dnsmasq' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.15
+      - rsync
+
+- name: "SECTION2 | 2.2.16 | Ensure mail transfer agent is configured for local-only mode"
+  block:
+      - name: "SECTION2 | 2.2.16 | Ensure mail transfer agent is configured for local-only mode | Make changes if exim4 installed"
+        ansible.builtin.lineinfile:
+            path: /etc/exim4/update-exim4.conf.conf
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+        with_items:
+            - { regexp: '^dc_eximconfig_configtype', line: "dc_eximconfig_configtype='local'" }
+            - { regexp: '^dc_local_interfaces', line: "dc_local_interfaces='127.0.0.1 ; ::1'" }
+            - { regexp: '^dc_readhost', line: "dc_readhost=''" }
+            - { regexp: '^dc_relay_domains', line: "dc_relay_domains=''" }
+            - { regexp: '^dc_minimaldns', line: "dc_minimaldns='false'" }
+            - { regexp: '^dc_relay_nets', line: "dc_relay_nets=''" }
+            - { regexp: '^dc_smarthost', line: "dc_smarthost=''" }
+            - { regexp: '^dc_use_split_config', line: "dc_use_split_config='false'" }
+            - { regexp: '^dc_hide_mailname', line: "dc_hide_mailname=''" }
+            - { regexp: '^dc_mailname_in_oh', line: "dc_mailname_in_oh='true'" }
+            - { regexp: '^dc_localdelivery', line: "dc_localdelivery='mail_spool'" }
+        notify: restart exim4
+        when: "'exim4' in ansible_facts.packages"
+
+      - name: "SECTION2 | 2.2.16 | Ensure mail transfer agent is configured for local-only mode | Make changes if postfix is installed"
+        ansible.builtin.lineinfile:
+            path: /etc/postfix/main.cf
+            regexp: '^(#)?inet_interfaces'
+            line: 'inet_interfaces = loopback-only'
+        notify: restart postfix
+        when: "'postfix' in ansible_facts.packages"
+
+      - name: "SECTION2 | 2.2.16 | Ensure mail transfer agent is configured for local-only mode | Message out other main agents"
+        ansible.builtin.debug:
+            msg:
+                - "Warning!! You are not using either exim4 or postfix"
+                - "Please review your vendors documentation to configure local-only mode"
+        when:
+            - "'exim4' not in ansible_facts.packages"
+            - "'postfix' not in ansible_facts.packages"
+
+      - name: "SECTION2 | 2.2.16 | WARN | Ensure mail transfer agent is configured for local-only mode | warn_count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+        when:
+            - "'exim4' not in ansible_facts.packages"
+            - "'postfix' not in ansible_facts.packages"
+  vars:
+      warn_control_id: '2.2.16'
+  when:
+      - cis_ubuntu2004_rule_2_2_16
+      - not cis_ubuntu2004_is_mail_server
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - scored
+      - patch
+      - rule_2.2.16
+      - postfix
+
+- name: "SECTION2 | 2.2.17 | Ensure rsync service is either not installed or masked"
+  block:
+      - name: "2.2.17 | Ensure rsync service is either not installed or masked | remove pkg"
+        ansible.builtin.package:
+            name: rsync
+            state: absent
+        when:
+            - cis_ubuntu2004_rule_2_2_17
+            - cis_ubuntu2004_rsync_server == 'remove'
+
+      - name: "SECTION2 | 2.2.17 | Ensure rsync service is either not installed or masked | mask service"
+        ansible.builtin.service:
+            name: rsync.service
+            state: stopped
+            enabled: false
+            masked: true
+        when:
+            - cis_ubuntu2004_rule_2_2_17
+            - cis_ubuntu2004_rsync_server == 'mask'
+  when:
+      - "'rsync' in ansible_facts.packages"
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.2.17
+      - rsync
+
 
 # ------------------------------------------------------------------------------
 
-- name: "SECTION2 | 2.4.2.1 | Ensure at is restricted to authorized users"
+- name: "SECTION2 | 2.3.1 | Ensure NIS Client is not installed"
+  ansible.builtin.package:
+      name: nis
+      state: absent
   when:
-    - cis_ubuntu2204_rule_2_4_2_1
-    - service_status_cron.stdout == "loaded"
+      - cis_ubuntu2004_rule_2_3_1
+      - not cis_ubuntu2004_nis_required
   tags:
-    - rule_2_4_2
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - rule_2.3.1
+      - nis
+
+- name: "SECTION2 | 2.3.2 | Ensure rsh client is not installed"
+  ansible.builtin.package:
+      name: rsh-client
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_3_2
+      - not cis_ubuntu2004_rsh_required
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.3.2
+      - rsh
+
+- name: "SECTION2 | 2.3.3 | Ensure talk client is not installed"
+  ansible.builtin.package:
+      name: talk
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_3_3
+      - not cis_ubuntu2004_talk_required
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.3.3
+      - talk
+
+- name: "SECTION2 | 2.3.4 | Ensure telnet client is not installed"
+  ansible.builtin.package:
+      name: telnet
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_3_4
+      - not cis_ubuntu2004_telnet_required
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.3.4
+      - telnet
+
+- name: "SECTION2 | 2.3.5 | Ensure LDAP client is not installed"
+  ansible.builtin.package:
+      name: ldap-utils
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_3_5
+      - not cis_ubuntu2004_ldap_clients_required
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.3.5
+      - ldap
+
+- name: "SECTION2 | 2.3.6 | Ensure RPC is not installed"
+  ansible.builtin.package:
+      name: rpcbind
+      state: absent
+  when:
+      - cis_ubuntu2004_rule_2_3_6
+      - not cis_ubuntu2004_rpc_required
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_2.3.6
+      - rpbc
+      
+# ------------------------------------------------------------------------------
+
+- name: "SECTION2 | 2.4 | AUDIT | Ensure nonessential services are removed or masked"
   block:
-    - name: "SECTION2 | 2.4.2.1 | Ensure at is restricted to authorized users | rm at.deny"
-      ansible.builtin.file:
-        dest: /etc/at.deny
-        state: absent
-    - name: "SECTION2 | 2.4.2.1 | Ensure at is restricted to authorized users | set at.allow"
-      ansible.builtin.template:
-        src: at.allow.j2
-        dest: /etc/at.allow
-        owner: "{{ cis_ubuntu2204_section2_owner_default }}"
-        group: "{{ cis_ubuntu2204_section2_group_etc_at_allow }}"
-        mode: "{{ cis_ubuntu2204_section2_mode_cron }}"
+      - name: "SECTION2 | 2.4 | AUDIT | Ensure nonessential services are removed or masked | Check for services"
+        ansible.builtin.shell: lsof -i -P -n | grep -v "(ESTABLISHED)"
+        changed_when: false
+        failed_when: false
+        check_mode: false
+        register: cis_ubuntu2004_2_3_services
+
+      - name: "SECTION2 | 2.4 | AUDIT | Ensure nonessential services are removed or masked | Message out running services"
+        ansible.builtin.debug:
+            msg:
+                - "Warning!! Below are the running services. Please review and remove as well as mask un-needed services"
+                - "{{ cis_ubuntu2004_2_3_services.stdout_lines }}"
+        when: cis_ubuntu2004_2_3_services.stdout | length > 0
+
+      - name: "SECTION2 | 2.4 | AUDIT | Ensure nonessential services are removed or masked | Set warning count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+        when: cis_ubuntu2004_2_3_services.stdout | length > 0
+  vars:
+      warn_control_id: '2.4'
+  when:
+      - cis_ubuntu2004_rule_2_4
+  tags:
+      - level1-server
+      - level1-workstation
+      - manual
+      - audit
+      - rule_2.4
+      - services
