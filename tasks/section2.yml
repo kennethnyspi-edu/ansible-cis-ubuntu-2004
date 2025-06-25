@@ -709,7 +709,7 @@
             file: warning_facts.yml
         when: cis_ubuntu2004_2_3_services.stdout | length > 0
   vars:
-      warn_control_id: '2.4'
+    warn_control_id: '2.4'
   when:
       - cis_ubuntu2004_rule_2_4
   tags:
