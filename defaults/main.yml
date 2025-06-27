@@ -667,3 +667,9 @@ cis_ubuntu2004_sgid_adjust: false
 # Control 6.2.5 Allow ansible to adjust world-writable files. False will just display world-writable files, True will remove world-writable
 # cis_ubuntu2004_passwd_label: "{{ (this_item | default(item)).id }}: {{ (this_item | default(item)).dir }}"
 cis_ubuntu2004_passwd_label: "{{ (this_item | default(item)).id }}: {{ (this_item | default(item)).dir }}"
+
+# We've defined disruption-high to indicate items that are likely to cause
+# disruption in a normal workflow.  These items can be remediated automatically
+# but are disabled by default to avoid disruption.
+# Value of true runs disruptive tasks, value of false will skip disruptive tasks
+cis_ubuntu2004_disruption_high: true
