@@ -432,6 +432,7 @@ cis_ubuntu2004_warning_banner: |
 # cis_ubuntu2004_time_sync_tool is the tool in which to synchronize time
 # The two options are chrony, ntp, or systemd-timesyncd
 cis_ubuntu2004_time_sync_tool: "systemd-timesyncd"
+cis_ubuntu2004_time_synchronization_service: "systemd-timesyncd"
 
 # This setting allow to use 'pool' or 'servers' options using values below.
 # only one wil be applied
