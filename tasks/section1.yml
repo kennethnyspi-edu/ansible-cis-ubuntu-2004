@@ -521,7 +521,7 @@
     fstype: tmpfs
     opts: "defaults,rw,relatime,size=2G,nodev,nosuid,noexec"
   when:
-    - cis_ubuntu2204_rule_1_1_8_1
+    - cis_ubuntu2004_rule_1_1_8_1
   tags:
     - rule_1_1_8_1
     - server_l1
