@@ -246,111 +246,267 @@
 
 # ------------------------------------------------------------------------------
 
+- name: "SECTION1 | 1.1.3.1 | Ensure separate partition exists for /var"
+  block:
+      - name: "SECTION1 | 1.1.3.1 | Ensure separate partition exists for /var | Absent"
+        ansible.builtin.debug:
+            msg: "Warning!! {{ required_mount }} doesn't exist. This is a manual task"
+
+      - name: "SECTION1 | 1.1.3.1 | WARN | Ensure separate partition exists for /var | warn_count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+  vars:
+      warn_control_id: '1.1.3.1'
+      required_mount: '/var'
+  when:
+      - required_mount not in mount_names
+      - cis_ubuntu2004_rule_1_1_3_1
+  tags:
+      - level2-server
+      - level2-workstation
+      - automated
+      - audit
+      - rule_1.1.3.1
+      - var
+
 - name: |
-    "SECTION1 | 1.1.3.1 | Ensure separate partition exists for /var"
     "SECTION1 | 1.1.3.2 | Ensure /var partition includes the nodev option"
     "SECTION1 | 1.1.3.3 | Ensure /var partition includes the nosuid option"
-  ansible.builtin.template:
-    src: system/var.mount.j2
-    dest: /etc/systemd/system/var.mount
-    owner: "{{ cis_ubuntu2004_section1_owner_default }}"
-    group: "{{ cis_ubuntu2004_section1_group_default }}"
-    mode: "{{ cis_ubuntu2004_section1_mode_default }}"
-  notify:
-    - systemd restart and enable var.mount
+  ansible.posix.mount:
+      path: /var
+      src: "{{ item.device }}"
+      state: present
+      fstype: "{{ item.fstype }}"
+      opts: defaults,{% if cis_ubuntu2004_rule_1_1_3_2 %}nodev,{% endif %}{% if cis_ubuntu2004_rule_1_1_3_3 %}nosuid{% endif %}
+  notify: Remount var
+  loop: "{{ ansible_mounts }}"
+  loop_control:
+      label: "{{ item.device }}"
   when:
-    - cis_ubuntu2004_rule_1_1_3_1
+      - item.mount == "/var"
+      - cis_ubuntu2004_rule_1_1_3_2 or
+        cis_ubuntu2004_rule_1_1_3_3
   tags:
-    - rule_1_1_3_1
-    - server_l1
-    - workstation_l1
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.1.3.2
+      - rule_1.1.3.3
+      - var
 
 # # ------------------------------------------------------------------------------
 
+- name: "SECTION1 | 1.1.4.1 | Ensure separate partition exists for /var/tmp "
+  block:
+      - name: "SECTION1 | 1.1.4.1 | Ensure separate partition exists for /var/tmp  | Absent"
+        ansible.builtin.debug:
+            msg: "Warning!! {{ required_mount }} doesn't exist. This is a manual task"
+
+      - name: "SECTION1 | 1.1.4.1 | WARN | Ensure separate partition exists for /var/tmp  | warn_count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+  vars:
+      warn_control_id: '1.1.4.1'
+      required_mount: '/var/tmp'
+  when:
+      - required_mount not in mount_names
+      - cis_ubuntu2004_rule_1_1_4_1
+  tags:
+      - level2-server
+      - level2-workstation
+      - automated
+      - audit
+      - rule_1.1.4.1
+      - var
+
 - name: |
-    "SECTION1 | 1.1.4.1 | Ensure separate partition exists for /var/tmp"
     "SECTION1 | 1.1.4.2 | Ensure /var/tmp partition includes the nodev option"
     "SECTION1 | 1.1.4.3 | Ensure /var/tmp partition includes the noexec option"
     "SECTION1 | 1.1.4.4 | Ensure /var/tmp partition includes the nosuid option"
-  ansible.builtin.template:
-    src: system/var.tmp.mount.j2
-    dest: /etc/systemd/system/var.tmp.mount
-    owner: "{{ cis_ubuntu2004_section1_owner_default }}"
-    group: "{{ cis_ubuntu2004_section1_group_default }}"
-    mode: "{{ cis_ubuntu2004_section1_mode_default }}"
-  notify:
-    - systemd restart and enable var.tmp.mount
+  ansible.posix.mount:
+      path: /var/tmp
+      src: "{{ item.device }}"
+      state: present
+      fstype: "{{ item.fstype }}"
+      opts: defaults,{% if cis_ubuntu2004_rule_1_1_4_2 %}nodev,{% endif %}{% if cis_ubuntu2004_rule_1_1_4_3 %}noexec,{% endif %}{% if cis_ubuntu2004_rule_1_1_4_4 %}nosuid{% endif %}
+  notify: Remount var_tmp
+  with_items: "{{ ansible_mounts }}"
+  loop_control:
+      label: "{{ item.device }}"
   when:
-    - cis_ubuntu2004_rule_1_1_4_1
+      - item.mount == "/var/tmp"
+      - cis_ubuntu2004_rule_1_1_4_2 or
+        cis_ubuntu2004_rule_1_1_4_3 or
+        cis_ubuntu2004_rule_1_1_4_4
   tags:
-    - rule_1_1_4_1
-    - server_l2
-    - workstation_l2
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.1.4.2
+      - rule_1.1.4.3
+      - rule_1.1.4.4
+      - var
 
 # # ------------------------------------------------------------------------------
 
+- name: "SECTION1 | 1.1.5.1 | Ensure separate partition exists for /var/log"
+  block:
+      - name: "SECTION1 | 1.1.5.1 | Ensure separate partition exists for /var/log| Absent"
+        ansible.builtin.debug:
+            msg: "Warning!! {{ required_mount }} doesn't exist. This is a manual task"
+
+      - name: "SECTION1 | 1.1.5.1 | WARN | Ensure separate partition exists for /var/log | warn_count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+  vars:
+      warn_control_id: '1.1.5.1'
+      required_mount: '/var/log'
+  when:
+      - required_mount not in mount_names
+      - cis_ubuntu2004_rule_1_1_5_1
+  tags:
+      - level2-server
+      - level2-workstation
+      - automated
+      - audit
+      - rule_1.1.5.1
+      - varlog
+
 - name: |
-    "SECTION1 | 1.1.5.1 | Ensure separate partition exists for /var/log"
     "SECTION1 | 1.1.5.2 | Ensure /var/log partition includes the nodev option"
     "SECTION1 | 1.1.5.3 | Ensure /var/log partition includes the noexec option"
     "SECTION1 | 1.1.5.4 | Ensure /var/log partition includes the nosuid option"
-  ansible.builtin.template:
-    src: system/var.log.mount.j2
-    dest: /etc/systemd/system/var.log.mount
-    owner: "{{ cis_ubuntu2004_section1_owner_default }}"
-    group: "{{ cis_ubuntu2004_section1_group_default }}"
-    mode: "{{ cis_ubuntu2004_section1_mode_default }}"
-  notify:
-    - systemd restart and enable var.log.mount
+  ansible.posix.mount:
+      path: /var/log
+      src: "{{ item.device }}"
+      state: present
+      fstype: "{{ item.fstype }}"
+      opts: defaults,{% if cis_ubuntu2004_rule_1_1_5_2 %}nodev,{% endif %}{% if cis_ubuntu2004_rule_1_1_5_3 %}noexec,{% endif %}{% if cis_ubuntu2004_rule_1_1_5_4 %}nosuid{% endif %}
+  notify: Remount var_log
+  loop: "{{ ansible_mounts }}"
+  loop_control:
+      label: "{{ item.device }}"
   when:
-    - cis_ubuntu2004_rule_1_1_5_1
+      - item.mount == "/var/log"
+      - cis_ubuntu2004_rule_1_1_5_2 or
+        cis_ubuntu2004_rule_1_1_5_3 or
+        cis_ubuntu2004_rule_1_1_5_4
   tags:
-    - rule_1_1_5_1
-    - server_l2
-    - workstation_l2
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.1.5.2
+      - rule_1.1.5.3
+      - rule_1.1.5.4
+      - varlog
 
 # # ------------------------------------------------------------------------------
 
+- name: "SECTION1 | 1.1.6.1 | Ensure separate partition exists for /var/log/audit"
+  block:
+      - name: "SECTION1 | 1.1.6.1 | Ensure separate partition exists for /var/log/audit | Absent"
+        ansible.builtin.debug:
+            msg: "Warning!! {{ required_mount }} doesn't exist. This is a manual task"
+
+      - name: "SECTION1 | 1.1.6.1 | WARN | Ensure separate partition exists for /var/log/audit | warn_count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+  vars:
+      warn_control_id: '1.1.6.1'
+      required_mount: '/var/log/audit'
+  when:
+      - required_mount not in mount_names
+      - cis_ubuntu2004_rule_1_1_6_1
+  tags:
+      - level2-server
+      - level2-workstation
+      - automated
+      - audit
+      - rule_1.1.6.1
+      - varlogaudit
+
 - name: |
-    "SECTION1 | 1.1.6.1 | Ensure separate partition exists for /var/log/audit"
     "SECTION1 | 1.1.6.2 | Ensure /var/log/audit partition includes the nodev option"
     "SECTION1 | 1.1.6.3 | Ensure /var/log/audit partition includes the noexec option"
     "SECTION1 | 1.1.6.4 | Ensure /var/log/audit partition includes the nosuid option"
-  ansible.builtin.template:
-    src: system/var.log.audit.mount.j2
-    dest: /etc/systemd/system/var.log.audit.mount
-    owner: "{{ cis_ubuntu2004_section1_owner_default }}"
-    group: "{{ cis_ubuntu2004_section1_group_default }}"
-    mode: "{{ cis_ubuntu2004_section1_mode_default }}"
-  notify:
-    - systemd restart and enable var.log.audit.mount
+  ansible.posix.mount:
+      path: /var/log/audit
+      src: "{{ item.device }}"
+      state: present
+      fstype: "{{ item.fstype }}"
+      opts: defaults,{% if cis_ubuntu2004_rule_1_1_6_2 %}nodev,{% endif %}{% if cis_ubuntu2004_rule_1_1_6_3 %}noexec,{% endif %}{% if cis_ubuntu2004_rule_1_1_6_4 %}nosuid{% endif %}
+  notify: Remount var_log_audit
+  loop: "{{ ansible_mounts }}"
+  loop_control:
+      label: "{{ item.device }}"
   when:
-    - cis_ubuntu2004_rule_1_1_6_1
+      - item.mount == "/var/log/audit"
+      - cis_ubuntu2004_rule_1_1_6_2 or
+        cis_ubuntu2004_rule_1_1_6_3 or
+        cis_ubuntu2004_rule_1_1_6_4
   tags:
-    - rule_1_1_6_1
-    - server_l2
-    - workstation_l2
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.1.6.2
+      - rule_1.1.6.3
+      - rule_1.1.6.4
+      - varlogaudit
 
 # # ------------------------------------------------------------------------------
 
+- name: SECTION1 | 1.1.7.1 | Ensure /home is a separate partition"
+  block:
+      - name: "SECTION1 | 1.1.7.1 | Ensure separate partition exists for /home | Absent"
+        ansible.builtin.debug:
+            msg: "Warning!! {{ required_mount }} doesn't exist. This is a manual task"
+
+      - name: "SECTION1 | 1.1.7.1 | WARN | Ensure separate partition exists for /home | warn_count"
+        ansible.builtin.import_tasks:
+            file: warning_facts.yml
+  vars:
+      warn_control_id: '1.1.7.1'
+      required_mount: '/home'
+  when:
+      - required_mount not in mount_names
+      - cis_ubuntu2004_rule_1_1_7_1
+  tags:
+      - level2-server
+      - level2-workstation
+      - automated
+      - audit
+      - rule_1.1.7.1
+      - home
+
 - name: |
-    "SECTION1 | 1.1.7.1 | Ensure /home is a separate partition"
     "SECTION1 | 1.1.7.2 | Ensure /home partition includes the nodev option"
     "SECTION1 | 1.1.7.3 | Ensure /home partition includes the nosuid option"
-  ansible.builtin.template:
-    src: system/home.mount.j2
-    dest: /etc/systemd/system/home.mount
-    owner: "{{ cis_ubuntu2004_section1_owner_default }}"
-    group: "{{ cis_ubuntu2004_section1_group_default }}"
-    mode: "{{ cis_ubuntu2004_section1_mode_default }}"
-  notify:
-    - systemd restart and enable home.mount
+  ansible.posix.mount:
+      path: /home
+      src: "{{ item.device }}"
+      state: present
+      fstype: "{{ item.fstype }}"
+      opts: defaults,{% if cis_ubuntu2004_rule_1_1_7_2 %}nodev,{% endif %}{% if cis_ubuntu2004_rule_1_1_7_3 %}nosuid,{% endif %}
+  notify: Remount home
+  loop: "{{ ansible_mounts }}"
+  loop_control:
+      label: "{{ item.device }}"
   when:
-    - cis_ubuntu2004_rule_1_1_7_1
+      - item.mount == "/home"
+      - cis_ubuntu2004_rule_1_1_7_2 or
+        cis_ubuntu2004_rule_1_1_7_3
   tags:
-    - rule_1_1_7_1
-    - server_l2
-    - workstation_l2
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.1.7.2
+      - rule_1.1.7.3
+      - home
 
 # ------------------------------------------------------------------------------
 
@@ -572,107 +728,81 @@
 
 # ------------------------------------------------------------------------------
 
-- name: "SECTION1 | 1.4.1 | Ensure bootloader password is set"
-  when:
-    - cis_ubuntu2004_rule_1_4_1
-    - cis_ubuntu2004_set_boot_pass
-  tags:
-    - rule_1_4
-    - server_l1
-    - workstation_l1
-    - molecule-idempotence-notest
+- name: "1.4.1 | Ensure bootloader password is set"
   block:
-    - name: "SECTION1 | 1.4.1 | Ensure bootloader password is set | generate password"
-      ansible.builtin.shell: |
-        set -o pipefail &&
-          if [ '{{ cis_ubuntu2004_bootloader_password }}' == 'random' ]; then
-            PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c12)
-          else
-            PASSWORD='{{ cis_ubuntu2004_bootloader_password }}'
-          fi
-        echo -e "$PASSWORD\n$PASSWORD" | grub-mkpasswd-pbkdf2 --iteration-count=600000 --salt=64 | awk '/grub.pbkdf/{print$NF}'
-      register: cis_ubuntu2004_grub_bootloader_password
-      args:
-        executable: "{{ cis_ubuntu2004_shell_executable }}"
-      changed_when: false
-
-    - name: "SECTION1 | 1.4.1 | Ensure bootloader password is set | generate config"
-      ansible.builtin.copy:
-        dest: /etc/grub.d/00_password
-        content: "cat << EOF\nexec tail -n +2 $0\nset superusers=\"root\"\npassword_pbkdf2 root {{ cis_ubuntu2004_grub_bootloader_password.stdout }}\nEOF"
-        owner: "{{ cis_ubuntu2004_section1_owner_default }}"
-        group: "{{ cis_ubuntu2004_section1_group_default }}"
-        mode: "{{ cis_ubuntu2004_section1_mode_etc_grub_d }}"
-      notify: generate new grub config
-      when:
-        - cis_ubuntu2004_grub_bootloader_password is defined
-        - cis_ubuntu2004_grub_bootloader_password.stdout is defined
-        - cis_ubuntu2004_grub_bootloader_password.stdout | length > 0
-
-    - name: "SECTION1 | 1.4.1 | Ensure bootloader password is set | disable password for system boot"
-      ansible.builtin.replace:
-        path: /etc/grub.d/10_linux
-        regexp: '--class os"'
-        replace: '--class os --unrestricted"'
-      notify: generate new grub config
-      when:
-        - cis_ubuntu2004_disable_boot_pass
-
-- name: "SECTION1 | 1.4.2 | Ensure permissions on bootloader config are configured"
-  block:
-      - name: "SECTION1 | 1.4.2 | Ensure permissions on bootloader config are configured | Check for Grub file"
-        ansible.builtin.stat:
+      - name: "1.4.1 | Ensure bootloader password is set | set superusers and password"
+        ansible.builtin.lineinfile:
             path: "{{ cis_ubuntu2004_grub_user_file }}"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+            state: present
+            insertafter: "{{ item.after | default(omit) }}"
+            create: true
+        loop:
+            - { regexp: '^set superusers', line: 'set superusers="{{ cis_ubuntu2004_grub_user }}"' }
+            - { regexp: '^password_pbkdf2 {{ cis_ubuntu2004_grub_user }} grub.pbkdf2.*', line: 'password_pbkdf2 {{ cis_ubuntu2004_grub_user }} {{ cis_ubuntu2004_bootloader_password_hash }}', after: 'set superusers="' }
+        notify: Grub update
+
+      - name: "1.4.1 | Ensure bootloader password is set | allow unrestricted boot"
+        ansible.builtin.lineinfile:
+            path: "/etc/grub.d/10_linux"
+            regexp: '(^CLASS="--class gnu-linux --class gnu --class os).*"$'
+            line: '\g<1> --unrestricted"'
+            backrefs: true
+        notify: Grub update
+        when: not cis_ubuntu2004_ask_passwd_to_boot
+  when:
+      - cis_ubuntu2004_set_boot_pass
+      - cis_ubuntu2004_rule_1_4_1
+  tags:
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.4.1
+      - grub
+
+- name: "1.4.2 | Ensure permissions on bootloader config are configured"
+  block:
+      - name: "1.4.2 | Ensure permissions on bootloader config are configured | Check for Grub file"
+        ansible.builtin.stat:
+            path: "{{ cis_ubuntu2004_grub_file }}"
         check_mode: false
         register: cis_ubuntu2004_1_4_2_grub_cfg_status
 
-      - name: "SECTION1 | 1.4.2 | Ensure permissions on bootloader config are configured | Set permissions"
+      - name: "1.4.2 | Ensure permissions on bootloader config are configured | Set permissions"
         ansible.builtin.file:
-            path: "{{ cis_ubuntu2004_grub_user_file }}"
-            owner: "{{ cis_ubuntu2204_section1_owner_default }}"
-            group: "{{ cis_ubuntu2204_section1_group_default }}"
+            path: "{{ cis_ubuntu2004_grub_file }}"
+            owner: root
+            group: root
             mode: 0600
         when:
             - cis_ubuntu2004_1_4_2_grub_cfg_status.stat.exists
             - cis_ubuntu2004_1_4_2_grub_cfg_status.stat.mode != "0400"
   when:
-      #-  cis_ubuntu2004_rule_1_4_2
-      - cis_ubuntu2004_1_4_2
+      - cis_ubuntu2004_rule_1_4_2
   tags:
-      #- level1-server
-      #- level1-workstation
-      #- automated
-      #- patch
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
       - rule_1.4.2
-      - server_l1
-      - workstation_l1
-      #- grub
+      - grub
 
-- name: "SECTION1 | 1.4.3 | Ensure authentication required for single user mode"
+- name: "1.4.3 | Ensure authentication required for single user mode"
+  ansible.builtin.user:
+      name: "{{ cis_ubuntu2004_grub_user }}"
+      password: "{{ cis_ubuntu2004_grub_user_passwd }}"
   when:
-    - cis_ubuntu2004_rule_1_4_3
-    - cis_ubuntu2004_set_grub_user_password
+      - cis_ubuntu2004_rule_1_4_3
+      - cis_ubuntu2004_set_grub_user_password
   tags:
-    - level1-server
-    - level1-workstation
-    - automated
-    - patch
-    - rule_1.4.3
-    - passwd
-  block:
-    - name: "SECTION1 | 1.4.3 | Get current root password hash from /etc/shadow"
-      ansible.builtin.command: "awk -F: '$1 == \"root\" { print $2 }' /etc/shadow"
-      register: root_shadow_password
-      changed_when: false
-      check_mode: false
-
-    - name: "SECTION1 | 1.4.3 | Set root password if non-compliant with CIS hash policy"
-      ansible.builtin.user:
-        name: "{{ cis_ubuntu2004_section1_owner_default }}"
-        password: "{{ cis_ubuntu2004_grub_user_passwd }}"
-      when:
-        - root_shadow_password.stdout is defined
-        - root_shadow_password.stdout | regex_search('^\$(y|5|6|g)') is not defined
+      - level1-server
+      - level1-workstation
+      - automated
+      - patch
+      - rule_1.4.3
+      - passwd
 
 # ------------------------------------------------------------------------------
 
