@@ -301,7 +301,7 @@
       state: absent
   when:
       - cis_ubuntu2004_rule_2_2_3
-      - not cis_ubuntu2004_allow_cups
+      - not cis_ubuntu2004_cups_server
       - "'cups' in ansible_facts.packages"
   tags:
       - level1-server
