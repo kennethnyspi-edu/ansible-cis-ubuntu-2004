@@ -1,140 +1,135 @@
----
 # handlers file for ansible-cis-ubuntu-2004
 
 # ------------------------------------------------------------------------------
+---
 
-- name: "HANDLER | 1.1.2.1 | systemd restart and enable tmp.mount"
-  become: true
-  ansible.builtin.systemd_service:
-    name: tmp.mount
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: reloaded
-  listen: systemd restart and enable tmp.mount
+- name: Remount tmp
+  ansible.posix.mount:
+      name: /tmp
+      state: remounted
 
-# ------------------------------------------------------------------------------
+- name: remount dev_shm
+  ansible.posix.mount:
+      name: /dev/shm
+      state: remounted
 
-- name: "HANDLER | 1.3.1 | systemd restart and enable apparmor"
-  become: true
-  ansible.builtin.systemd_service:
-    name: apparmor.service
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: restart apparmor
-  when: ansible_virtualization_type != "docker"
+- name: Remount var
+  ansible.posix.mount:
+      name: /var
+      state: remounted
 
-- name: "HANDLER | 1.5.3 | systemd restart and enable systemd-coredump"
-  become: true
-  ansible.builtin.systemd_service:
-    name: systemd-coredump.socket
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: restart systemd-coredump
+- name: Remount var_tmp
+  ansible.posix.mount:
+      name: /var/tmp
+      state: remounted
 
-# ------------------------------------------------------------------------------
+- name: Remount var_log
+  ansible.posix.mount:
+      name: /var/log
+      state: remounted
 
-- name: "HANDLER | 1.7 | dconf update"
-  become: true
-  ansible.builtin.command: dconf update
-  changed_when: false
-  listen: Update dconf
-  when: ansible_virtualization_type != "docker"
+- name: Remount var_log_audit
+  ansible.posix.mount:
+      name: /var/log/audit
+      state: remounted
 
-# ------------------------------------------------------------------------------
+- name: Remount home
+  ansible.posix.mount:
+      name: /home
+      state: remounted
 
-- name: "HANDLER | 2.3.2.1 | systemd restart and enable systemd-timesyncd"
-  become: true
-  ansible.builtin.systemd_service:
-    name: systemd-timesyncd
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: "restart systemd-timesyncd"
-
-- name: "HANDLER | 2.3.1.1, 2.3.3.1-2 | systemd restart and enable chrony"
-  become: true
-  ansible.builtin.systemd_service:
-    name: chrony
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: "restart chrony"
-
-# ------------------------------------------------------------------------------
-
-- name: "HANDLER | 6.2.1.1 | systemd restart and enable systemd-journald"
-  become: true
-  ansible.builtin.systemd_service:
-    name: systemd-journald
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: "restart systemd-journald"
-  when: ansible_virtualization_type != "docker"
-
-- name: "HANDLER | 6.2.1.2 | systemd restart and enable systemd-journal-upload"
-  become: true
-  ansible.builtin.systemd_service:
-    name: systemd-journal-upload
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: "restart systemd-journal-upload"
-  when: ansible_virtualization_type != "docker"
-
-- name: "HANDLER | 6.3.2 | systemd restart and enable auditd"
-  become: true
-  ansible.builtin.systemd_service:
-    name: auditd
-    daemon_reload: true
-    enabled: true
-    masked: false
-    state: restarted
-  listen: "restart auditd"
-  when: ansible_virtualization_type != "docker"
-
-# ------------------------------------------------------------------------------
-
-- name: "HANDLER | 1.4.2 | generate new grub config"
-  become: true
-  ansible.builtin.command: >
-    grub-mkconfig -o {{ cis_grub_cfg.stat.path }}
-  listen: generate new grub config
-  changed_when: false
-  notify: fix permissions after generate new grub config handler
-  when: ansible_virtualization_type != "docker"
-
-- name: "HANDLER | 1.4.2 | fix permissions after generate new grub config handler"
-  become: true
-  ansible.builtin.file:
-    path: "/boot/grub/grub.cfg"
-    owner: root
-    group: root
-    mode: "0400"
-  listen: fix permissions after generate new grub config handler
-
-# ------------------------------------------------------------------------------
-
-- name: "HANDLER | 1.3.1.2, 3.1.1, 6.3.1 | update-grub"
-  become: true
-  ansible.builtin.command: /usr/sbin/update-grub
-  changed_when: false
-  listen: update-grub
-  when: ansible_virtualization_type != "docker"
-
-- name: "HANDLER | 6.3.3 | merge and load the rules into active configuration"
-  become: true
-  ansible.builtin.command: /sbin/augenrules --load
-  changed_when: false
+- name: Grub update
+  ansible.builtin.shell: update-grub
+  notify: change_requires_reboot
   failed_when: false
-  listen: load audit rules
-  notify: restart auditd
+
+- name: reload gdm3
+  ansible.builtin.shell: dpkg-reconfigure gdm3
+  failed_when: false
+
+- name: restart postfix
+  ansible.builtin.systemd:
+      name: postfix
+      state: restarted
+
+- name: restart exim4
+  ansible.builtin.systemd:
+      name: exim4
+      state: restarted
+
+- name: restart timeservice
+  ansible.builtin.systemd:
+      name: "{{ ubtu20cis_time_sync_tool }}"
+      state: restarted
+# ---------------
+# ---------------
+# This is not a control however using the iptables module only writes to memory
+# if a reboot occurs that means changes can revert. This task will make the
+# above iptables settings permanent
+#
+# This is also idempotent as a handler
+# ---------------
+# ---------------
+
+- name: persistent ip4tables
+  ansible.builtin.shell: bash -c "iptables-save > /etc/iptables/rules.v4"
+  changed_when: ubtu20cis_iptables_save.rc == 0
+  failed_when: ubtu20cis_iptables_save.rc > 0
+  register: ubtu20cis_iptables_save
+
+- name: persistent ip6tables
+  ansible.builtin.shell: bash -c "ip6tables-save > /etc/iptables/rules.v6"
+  changed_when: ubtu20cis_ip6tables_save.rc == 0
+  failed_when: ubtu20cis_ip6tables_save.rc > 0
+  register: ubtu20cis_ip6tables_save
+
+########
+
+- name: sysctl flush ipv4 route table
+  ansible.posix.sysctl:
+      name: net.ipv4.route.flush
+      value: '1'
+      sysctl_set: true
+  when: ansible_virtualization_type != "docker"
+
+- name: reload ufw
+  community.general.ufw:
+      state: reloaded
+
+- name: sysctl flush ipv6 route table
+  ansible.posix.sysctl:
+      name: net.ipv6.route.flush
+      value: '1'
+      sysctl_set: true
+  when: ansible_virtualization_type != "docker"
+
+- name: restart auditd
+  ansible.builtin.service:
+      name: auditd
+      state: restarted
+  when:
+      - not ubtu20cis_skip_for_travis
+  tags:
+      - skip_ansible_lint
+
+- name: restart syslog service
+  ansible.builtin.systemd:
+      name: "{{ ubtu20cis_syslog_service }}"
+      state: restarted
+
+- name: restart journal-upload
+  ansible.builtin.systemd:
+      name: systemd-journal-upload
+      state: restarted
+
+- name: restart sshd
+  ansible.builtin.systemd:
+      name: sshd
+      state: restarted
+
+- name: reload gdm
+  ansible.builtin.shell: dpkg-reconfigure gdm3
+
+- name: change_requires_reboot
+  ansible.builtin.set_fact:
+      change_requires_reboot: true
