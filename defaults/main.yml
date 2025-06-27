@@ -325,45 +325,45 @@ cis_ubuntu2004_rule_6_2_11: true
 cis_ubuntu2004_rule_6_2_12: true
 
 # Service configuration variables, set to true to keep service
-ubtu20cis_allow_autofs: false
-ubtu20cis_allow_usb_storage: false
-ubtu20cis_avahi_server: false
-ubtu20cis_cups_server: false
-ubtu20cis_dhcp_server: false
-ubtu20cis_dnsmasq_server: false
-ubtu20cis_ldap_server: false
-ubtu20cis_nfs_server: false
-ubtu20cis_dns_server: false
-ubtu20cis_vsftpd_server: false
-ubtu20cis_httpd_server: false
-ubtu20cis_dovecot_server: false
-ubtu20cis_smb_server: false
-ubtu20cis_squid_server: false
-ubtu20cis_snmp_server: false
-ubtu20cis_rsync_server: mask  # Can be set to true, mask or remove depending on requirements
-ubtu20cis_nis_server: false
-ubtu20cis_nfs_client: false
+cis_ubuntu2004_allow_autofs: false
+cis_ubuntu2004_allow_usb_storage: false
+cis_ubuntu2004_avahi_server: false
+cis_ubuntu2004_cups_server: false
+cis_ubuntu2004_dhcp_server: false
+cis_ubuntu2004_dnsmasq_server: false
+cis_ubuntu2004_ldap_server: false
+cis_ubuntu2004_nfs_server: false
+cis_ubuntu2004_dns_server: false
+cis_ubuntu2004_vsftpd_server: false
+cis_ubuntu2004_httpd_server: false
+cis_ubuntu2004_dovecot_server: false
+cis_ubuntu2004_smb_server: false
+cis_ubuntu2004_squid_server: false
+cis_ubuntu2004_snmp_server: false
+cis_ubuntu2004_rsync_server: mask  # Can be set to true, mask or remove depending on requirements
+cis_ubuntu2004_nis_server: false
+cis_ubuntu2004_nfs_client: false
 # rpcbind is required by nfs-common which is required on client and server
-ubtu20cis_rpc_required: "{{ ubtu20cis_nfs_server or ubtu20cis_nfs_client }}"
+cis_ubuntu2004_rpc_required: "{{ cis_ubuntu2004_nfs_server or cis_ubuntu2004_nfs_client }}"
 
 # Clients in use variables
-ubtu20cis_nis_required: false
-ubtu20cis_rsh_required: false
-ubtu20cis_talk_required: false
-ubtu20cis_telnet_required: false
-ubtu20cis_ldap_clients_required: false
-ubtu20cis_is_router: false
+cis_ubuntu2004_nis_required: false
+cis_ubuntu2004_rsh_required: false
+cis_ubuntu2004_talk_required: false
+cis_ubuntu2004_telnet_required: false
+cis_ubuntu2004_ldap_clients_required: false
+cis_ubuntu2004_is_router: false
 
 # IPv4 requirement toggle
-ubtu20cis_ipv4_required: true
+cis_ubuntu2004_ipv4_required: true
 
 # IPv6 requirement toggle
-ubtu20cis_ipv6_required: false
+cis_ubuntu2004_ipv6_required: false
 
 # Other system wide variables
-# ubtu20cis_desktop_required is the toggle for requiring desktop environments. True means you use a desktop and will not disable/remove needed items to run a desktop (not recommented for servers)
+# cis_ubuntu2004_desktop_required is the toggle for requiring desktop environments. True means you use a desktop and will not disable/remove needed items to run a desktop (not recommented for servers)
 # false means you do not require a desktop
-ubtu20cis_desktop_required: false
+cis_ubuntu2004_desktop_required: false
 
 # UID settings for interactive users
 # These are discovered via logins.def if set true
@@ -377,11 +377,11 @@ max_int_uid: 65533
 expected_tmp_mnt: fstab
 
 # Control 1.3.1 - allow aide to be configured
-ubtu20cis_config_aide: true
+cis_ubuntu2004_config_aide: true
 
 # Control 1.3.2
 # These are the crontab settings for file system integrity enforcement
-ubtu20cis_aide_cron:
+cis_ubuntu2004_aide_cron:
     cron_user: root
     cron_file: /etc/cron.d/aide_cron
     aide_job: '/usr/bin/aide.wrapper --config /etc/aide/aide.conf --check'
@@ -398,52 +398,52 @@ ubtu20cis_aide_cron:
 # refers to https://help.ubuntu.com/community/Grub2/Passwords
 
 # You maybe changing the root password if grub user root - Ensure you understand the risks
-ubtu20cis_set_grub_user_password: false
-ubtu20cis_grub_user: root
-ubtu20cis_grub_user_passwd: '$y$j9T$MBA5l/tQyWifM869nQjsi.$cTy0ConcNjIYOn6Cppo5NAky20osrkRxz4fEWA8xac6'  # Set to changeme
-ubtu20cis_set_boot_pass: false
-ubtu20cis_grub_user_file: /etc/grub.d/40_custom
-ubtu20cis_grub_file: /boot/grub/grub.cfg
+cis_ubuntu2004_set_grub_user_password: false
+cis_ubuntu2004_grub_user: root
+cis_ubuntu2004_grub_user_passwd: '$y$j9T$MBA5l/tQyWifM869nQjsi.$cTy0ConcNjIYOn6Cppo5NAky20osrkRxz4fEWA8xac6'  # Set to changeme
+cis_ubuntu2004_set_boot_pass: false
+cis_ubuntu2004_grub_user_file: /etc/grub.d/40_custom
+cis_ubuntu2004_grub_file: /boot/grub/grub.cfg
 
 # This is used to set the password in grub the full string is required.
 # It is suggested that this variable is overridden by your setup e.g. inventory/ groupvars / vaults etc
-ubtu20cis_bootloader_password_hash: "grub.pbkdf2.sha512.10000.ChangeMe"  # pragma: allowlist secret
+cis_ubuntu2004_bootloader_password_hash: "grub.pbkdf2.sha512.10000.ChangeMe"  # pragma: allowlist secret
 
 # Change the following value to true if you wish to be prompted to get past grub bootloader
-ubtu20cis_ask_passwd_to_boot: false
+cis_ubuntu2004_ask_passwd_to_boot: false
 
 # 1.4.4
 # note this needs to be in the encrypted format
-ubtu20cis_set_root_password: true
-ubtu20cis_root_pw: $6$
+cis_ubuntu2004_set_root_password: true
+cis_ubuntu2004_root_pw: $6$
 
 # 1.7.1
 # disable dynamic motd to stop extra sshd message from appearing
-ubtu20cis_disable_dynamic_motd: true
+cis_ubuntu2004_disable_dynamic_motd: true
 
 # Control 1.8.2
 # This will be the motd banner must not contain the below items in order to be compliant with Ubuntu 20 CIS
 # \m, \r, \s, \v or references to the OS platform
-ubtu20cis_warning_banner: |
+cis_ubuntu2004_warning_banner: |
         Authorized uses only. All activity may be monitored and reported.
 
 # Section 2 Control Variables
 # Control 2.1.1.1
-# ubtu20cis_time_sync_tool is the tool in which to synchronize time
+# cis_ubuntu2004_time_sync_tool is the tool in which to synchronize time
 # The two options are chrony, ntp, or systemd-timesyncd
-ubtu20cis_time_sync_tool: "systemd-timesyncd"
+cis_ubuntu2004_time_sync_tool: "systemd-timesyncd"
 
 # This setting allow to use 'pool' or 'servers' options using values below.
 # only one wil be applied
-ubtu20cis_chrony_timesource: pool
+cis_ubuntu2004_chrony_timesource: pool
 
 # Control 2.1.2.1 2.1.3.1
 # Time settings used for all versions
-ubtu20cis_time_pool:
+cis_ubuntu2004_time_pool:
     - name: time.nist.gov
       options: iburst maxsources 4
 
-ubtu20cis_time_servers:
+cis_ubuntu2004_time_servers:
     - name: time-a-g.nist.gov
       options: iburst
     - name: time-b-g.nist.gov
@@ -451,23 +451,23 @@ ubtu20cis_time_servers:
     - name: time-c-g.nist.gov
       options: iburst
 
-ubtu20cis_is_mail_server: false
+cis_ubuntu2004_is_mail_server: false
 
 # Section 3 Control Variables
 # Control 3.1.2
-# ubtu20cis_install_network_manager determines if this role can install network manager
-ubtu20cis_install_network_manager: true
+# cis_ubuntu2004_install_network_manager determines if this role can install network manager
+cis_ubuntu2004_install_network_manager: true
 
-# ubtu20cis_firewall_package is the toggle for which firewall system is in use
+# cis_ubuntu2004_firewall_package is the toggle for which firewall system is in use
 # The valid options to use are ufw, nftables, or iptables
 # Warning!! nftables is not supported in this role and will only message out if nftables is selected
 # If using nftables please manually adjust firewall settings
-ubtu20cis_firewall_package: "ufw"
+cis_ubuntu2004_firewall_package: "ufw"
 
 # Control 3.5.1.5
-# ubtu20cis_ufw_allow_out_ports are the ports for the firewall to allow
-# if you want to allow out on all ports set variable to "all", example ubtu20cis_ufw_allow_out_ports: "all"
-ubtu20cis_ufw_allow_out_ports:
+# cis_ubuntu2004_ufw_allow_out_ports are the ports for the firewall to allow
+# if you want to allow out on all ports set variable to "all", example cis_ubuntu2004_ufw_allow_out_ports: "all"
+cis_ubuntu2004_ufw_allow_out_ports:
     - 53
     - 80
     - 443
@@ -475,27 +475,27 @@ ubtu20cis_ufw_allow_out_ports:
 # This is optional only and is not part of the benchmark but the request does make sense to ensure this is correct.
 
 ufw_add_incoming: false
-ubtu20cis_ufw_allow_in:
+cis_ubuntu2004_ufw_allow_in:
     - port: 22
       from: any
       proto: tcp
 
 # Control 3.5.2.4
 # nftables is not supported in this role. Some tasks have the task commented out, this is one of them
-# ubtu20cis_nftables_table_name is the name of the table in nftables you want to create
+# cis_ubuntu2004_nftables_table_name is the name of the table in nftables you want to create
 # the default nftables table name is inet filter. This variable name will be the one all
 # nftables configs are applied to
-# ubtu20cis_nftables_table_name: "inet filter"
+# cis_ubuntu2004_nftables_table_name: "inet filter"
 
 # Controls 3.5.3.2.1 through 3.5.3.3.4
 # The iptables module only writes to memory which means a reboot could revert settings
 # The below toggle will install iptables-persistent and save the rules in memory (/etc/iptables/rules.v4 or rules.v6)
 # This makes the CIS role changes permenant
-ubtu20cis_save_iptables_cis_rules: true
+cis_ubuntu2004_save_iptables_cis_rules: true
 
 # Section 4 Control Variables
 
-# ubtu20cis_sshd will contain all sshd variables. The task association and variable descriptions for each section are listed below
+# cis_ubuntu2004_sshd will contain all sshd variables. The task association and variable descriptions for each section are listed below
 # Control 4.2.x
 # allow_users, allow_groups, deny_users, and deny_groups. These are lists of users and groups to allow or deny ssh access to
 # These are lists that are just space delimited, for example allow_users: "vagrant ubuntu" for the vagrant and ubuntu users
@@ -523,7 +523,7 @@ ubtu20cis_save_iptables_cis_rules: true
 
 # login_grace_time is the time allowed for successful authentication to the SSH server. This needs to be set to 60 seconds or less to conform to CIS standards
 # max_sessions is the max number of open sessions permitted. Set the value to 4 or less to conform to CIS standards
-ubtu20cis_sshd:
+cis_ubuntu2004_sshd:
     log_level: "INFO"
     max_auth_tries: 4
     ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
@@ -540,31 +540,31 @@ ubtu20cis_sshd:
     # deny_groups:
 
 # Control 4.3.x
-# ubtu20cis_sudo_package is the name of the sudo package to install
+# cis_ubuntu2004_sudo_package is the name of the sudo package to install
 # The possible values are "sudo" or "sudo-ldap"
-ubtu20cis_sudo_package: "sudo"
+cis_ubuntu2004_sudo_package: "sudo"
 
-# ubtu20cis_sudo_logfile is the path and file name of the sudo log file
-ubtu20cis_sudo_logfile: "/var/log/sudo.log"
-ubtu20cis_sudo_timestamp_timeout: 15
-ubtu20cis_sugroup: nosugroup
+# cis_ubuntu2004_sudo_logfile is the path and file name of the sudo log file
+cis_ubuntu2004_sudo_logfile: "/var/log/sudo.log"
+cis_ubuntu2004_sudo_timestamp_timeout: 15
+cis_ubuntu2004_sugroup: nosugroup
 
 # Controls 4.4.x
-ubtu20cis_passwd_hash_algo: sha512  # pragma: allowlist secret
+cis_ubuntu2004_passwd_hash_algo: sha512  # pragma: allowlist secret
 # pam_tally2 login options allows for audit to be removed if required
-ubtu20cis_pamtally2_login_opts: 'onerr=fail audit silent deny=5 unlock_time=900'
+cis_ubuntu2004_pamtally2_login_opts: 'onerr=fail audit silent deny=5 unlock_time=900'
 
-# ubtu20cis_pamd_pwhistory_remember is number of password chnage cycles a user can re-use a password
+# cis_ubuntu2004_pamd_pwhistory_remember is number of password chnage cycles a user can re-use a password
 # This needs to be 5 or more to conform to CIS standards
-ubtu20cis_pamd_pwhistory_remember: 5
+cis_ubuntu2004_pamd_pwhistory_remember: 5
 
 # Control 4.5.x
-# ubtu20cis_pass will be password based variables
+# cis_ubuntu2004_pass will be password based variables
 # pass_min_days is the min number of days allowed between changing passwords. Set to 1 or more to conform to CIS standards
 # max_days forces passwords to expire in configured number of days. Set to 365 or less to conform to CIS standards
 # warn_age is how many days before pw expiry the user will be warned. Set to 7 or more to conform to CIS standards
 # inactive the number of days of inactivity before the account will lock. Set to 30 day sor less to conform to CIS standards
-ubtu20cis_pass:
+cis_ubuntu2004_pass:
     max_days: 365
     min_days: 1
     warn_age: 7
@@ -574,11 +574,11 @@ ubtu20cis_pass:
 
 # ubtu120cis_bash_umask is the umask to set in the /etc/bash.bashrc and /etc/profile.
 # The value needs to be 027 or more restrictive to comply with CIS standards
-ubtu20cis_bash_umask: '027'
+cis_ubuntu2004_bash_umask: '027'
 
 # Session timeout setting file (TMOUT setting can be set in multiple files)
 # Timeout value is in seconds. Set value to 900 seconds or less
-ubtu20cis_shell_session_timeout:
+cis_ubuntu2004_shell_session_timeout:
     file: /etc/profile.d/tmout.sh
     timeout: 900
 
@@ -586,19 +586,19 @@ ubtu20cis_shell_session_timeout:
 
 # Logging
 # Can be rsyslog or journald - anything else is not supported and will skip these steps
-ubtu20cis_syslog_service: 'rsyslog'
+cis_ubuntu2004_syslog_service: 'rsyslog'
 # if this is the journald server client upload to set to true
 journald_log_server: false
 
 # These Entries will need to be populated by the user
 # Journald Settings
-ubtu20cis_journal_upload:
+cis_ubuntu2004_journal_upload:
     remote_url:
     serverkeyfile:
     servercertfile:
-    ubtu20cis_journald:
+    cis_ubuntu2004_journald:
 
-ubtu20cis_journald_log_rotate:
+cis_ubuntu2004_journald_log_rotate:
     systemmaxuse:
     systemkeepfree:
     runtimemaxuse:
@@ -606,64 +606,64 @@ ubtu20cis_journald_log_rotate:
     maxfilesec:
 
 ## rsyslog
-ubtu20cis_system_is_log_server: false
-# ubtu20cis_rsyslog_ansible_managed will toggle ansible automated configurations of rsyslog
+cis_ubuntu2004_system_is_log_server: false
+# cis_ubuntu2004_rsyslog_ansible_managed will toggle ansible automated configurations of rsyslog
 # You should set the rsyslog to your side specific needs.
-ubtu20cis_rsyslog_ansible_managed: true
+cis_ubuntu2004_rsyslog_ansible_managed: true
 
-# ubtu20cis_remote_log_server is the remote logging server
-ubtu20cis_remote_log_server: 192.168.2.100
+# cis_ubuntu2004_remote_log_server is the remote logging server
+cis_ubuntu2004_remote_log_server: 192.168.2.100
 
-# ubtu20cis_audit_back_log_limit is the audit_back_log limit and should be set to a sufficient value
+# cis_ubuntu2004_audit_back_log_limit is the audit_back_log limit and should be set to a sufficient value
 # The example from CIS uses 8192
-ubtu20cis_audit_back_log_limit: 8192
+cis_ubuntu2004_audit_back_log_limit: 8192
 
-# ubtu20cis_max_log_file_size is largest the log file will become in MB
+# cis_ubuntu2004_max_log_file_size is largest the log file will become in MB
 # This should be set based on your sites policy
-ubtu20cis_max_log_file_size: 10
+cis_ubuntu2004_max_log_file_size: 10
 
-# ubtu20cis_auditd sets actions for admin_space_left_action and max_log_file_action
+# cis_ubuntu2004_auditd sets actions for admin_space_left_action and max_log_file_action
 # CIS allows admin_space_left_action of "halt" or "single"
-ubtu20cis_auditd:
+cis_ubuntu2004_auditd:
     admin_space_left_action: halt
     max_log_file_action: keep_logs
 
-# ubtu20cis_logrotate is the log rotate frequency. Options are daily, weekly, monthly, and yearly
-ubtu20cis_logrotate: "daily"
+# cis_ubuntu2004_logrotate is the log rotate frequency. Options are daily, weekly, monthly, and yearly
+cis_ubuntu2004_logrotate: "daily"
 
 # Control 4.3
-# ubtu20cis_logrotate_create_settings are the settings for the create parameter in /etc/logrotate.conf
+# cis_ubuntu2004_logrotate_create_settings are the settings for the create parameter in /etc/logrotate.conf
 # The permissions need to be 640 or more restrictive.
 # If you would like to include user/group settings to this parameter format the var as below
-# ubtu20cis_logrotate_create_settings: "0640 root utmp"
-ubtu20cis_logrotate_create_settings: "0640"
+# cis_ubuntu2004_logrotate_create_settings: "0640 root utmp"
+cis_ubuntu2004_logrotate_create_settings: "0640"
 
 # Section 6 Control Variables
 
-# ubtu20cis_no_world_write_adjust will toggle the automated fix to remove world-writable perms from all files
+# cis_ubuntu2004_no_world_write_adjust will toggle the automated fix to remove world-writable perms from all files
 # Setting to true will remove all world-writable permissions, and false will leave as-is
-ubtu20cis_no_world_write_adjust: true
+cis_ubuntu2004_no_world_write_adjust: true
 
-# ubtu20cis_un_owned_owner is the owner to set files to that have no owner
-ubtu20cis_unowned_owner: root
-# ubtu20cis_no_owner_adjust will toggle the automated fix to give a user to unowned files/directories
-# true will give the owner from ubtu20cis_un_owned_owner to all unowned files/directories and false will skip
-ubtu20cis_no_owner_adjust: true
+# cis_ubuntu2004_un_owned_owner is the owner to set files to that have no owner
+cis_ubuntu2004_unowned_owner: root
+# cis_ubuntu2004_no_owner_adjust will toggle the automated fix to give a user to unowned files/directories
+# true will give the owner from cis_ubuntu2004_un_owned_owner to all unowned files/directories and false will skip
+cis_ubuntu2004_no_owner_adjust: true
 
-# ubtu20cis_ungrouped_group is the group to set files to that have no group
-ubtu20cis_ungrouped_group: root
-# ubtu20cis_no_group_adjust will toggle the automated fix to give a group to ungrouped files/directories
-# true will give the group from ubtu20cis_un_owned_group to all ungrouped files/directories and false will skip
-ubtu20cis_no_group_adjust: true
+# cis_ubuntu2004_ungrouped_group is the group to set files to that have no group
+cis_ubuntu2004_ungrouped_group: root
+# cis_ubuntu2004_no_group_adjust will toggle the automated fix to give a group to ungrouped files/directories
+# true will give the group from cis_ubuntu2004_un_owned_group to all ungrouped files/directories and false will skip
+cis_ubuntu2004_no_group_adjust: true
 
-# ubtu20cis_suid_adjust is the toggle to remove the SUID bit from all files on all mounts
+# cis_ubuntu2004_suid_adjust is the toggle to remove the SUID bit from all files on all mounts
 # Set to true this role will remove that bit, set to false we will just warn about the files
-ubtu20cis_suid_adjust: false
+cis_ubuntu2004_suid_adjust: false
 
-# ubtu20cis_sgid_adjust is the toggle to remove the GUID bit from all files on all mounts
+# cis_ubuntu2004_sgid_adjust is the toggle to remove the GUID bit from all files on all mounts
 # Set to true this role will remove that bit, set to false we will just warn about the files
-ubtu20cis_sgid_adjust: false
+cis_ubuntu2004_sgid_adjust: false
 
 # Control 6.2.5 Allow ansible to adjust world-writable files. False will just display world-writable files, True will remove world-writable
-# ubtu20cis_passwd_label: "{{ (this_item | default(item)).id }}: {{ (this_item | default(item)).dir }}"
-ubtu20cis_passwd_label: "{{ (this_item | default(item)).id }}: {{ (this_item | default(item)).dir }}"
+# cis_ubuntu2004_passwd_label: "{{ (this_item | default(item)).id }}: {{ (this_item | default(item)).dir }}"
+cis_ubuntu2004_passwd_label: "{{ (this_item | default(item)).id }}: {{ (this_item | default(item)).dir }}"
