@@ -536,8 +536,8 @@
       enabled: false
   when:
       - cis_ubuntu2004_rule_1_1_9
-      #-  cis_ubuntu2004_autofs_service_status.stdout == "loaded"
-      #- not  cis_ubuntu2004_allow_autofs
+      - cis_ubuntu2004_autofs_service_status.stdout == "loaded"
+      - not cis_ubuntu2004_allow_autofs
   tags:
     - rule_1_1_9
     - server_l1
