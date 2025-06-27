@@ -78,6 +78,7 @@
         notify: restart timeservice
   when:
       - cis_ubuntu2004_rule_2_1_2_1
+      - cis_ubuntu2004_time_sync_tool == "chrony"
   tags:
       - level1-server
       - level1-workstation
@@ -92,6 +93,7 @@
       line: 'user _chrony'
   when:
       - cis_ubuntu2004_rule_2_1_2_2
+      - cis_ubuntu2004_time_sync_tool == "chrony"
   tags:
       - level1-server
       - level1-workstation
@@ -106,6 +108,7 @@
       enabled: true
   when:
       - cis_ubuntu2004_rule_2_1_2_3
+      - cis_ubuntu2004_time_sync_tool == "chrony"
   tags:
       - level1-server
       - level1-workstation
@@ -136,6 +139,7 @@
         notify: restart timeservice
   when:
       - cis_ubuntu2004_rule_2_1_3_1
+      - cis_ubuntu2004_time_sync_tool == "systemd-timesyncd"
   tags:
       - level1-server
       - level1-workstation
@@ -151,6 +155,7 @@
       masked: false
   when:
       - cis_ubuntu2004_rule_2_1_3_2
+      - cis_ubuntu2004_time_sync_tool == "systemd-timesyncd"
   tags:
       - level1-server
       - level1-workstation
@@ -170,6 +175,7 @@
   notify: Restart timeservice
   when:
       - cis_ubuntu2004_rule_2_1_4_1
+      - cis_ubuntu2004_time_sync_tool == "ntp"
   tags:
       - level1-server
       - level1-workstation
@@ -200,6 +206,7 @@
         notify: Restart timeservice
   when:
       - cis_ubuntu2004_rule_2_1_4_2
+      - cis_ubuntu2004_time_sync_tool == "ntp"
   tags:
       - level1-server
       - level1-workstation
@@ -215,6 +222,7 @@
   notify: Restart timeservice
   when:
       - cis_ubuntu2004_rule_2_1_4_3
+      - cis_ubuntu2004_time_sync_tool == "ntp"
   tags:
       - level1-server
       - level1-workstation
@@ -230,6 +238,7 @@
       masked: false
   when:
       - cis_ubuntu2004_rule_2_1_4_4
+      - cis_ubuntu2004_time_sync_tool == "ntp"
   tags:
       - level1-server
       - level1-workstation
