@@ -324,6 +324,12 @@ cis_ubuntu2004_rule_6_2_10: true
 cis_ubuntu2004_rule_6_2_11: true
 cis_ubuntu2004_rule_6_2_12: true
 
+# ------------------------------------------------------------------------------
+cis_ubuntu2004_regex_base_search: '^(#(\s)*)?'
+cis_ubuntu2004_regex_base_search_equals: '\s*=.*$'
+cis_ubuntu2004_shell_executable: /bin/bash
+cis_ubuntu2004_print_info_join_by: "\n"
+
 # Service configuration variables, set to true to keep service
 cis_ubuntu2004_allow_autofs: false
 cis_ubuntu2004_allow_usb_storage: false
