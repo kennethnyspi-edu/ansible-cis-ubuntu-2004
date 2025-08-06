@@ -1072,21 +1072,33 @@
 
 - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly"
   block:
-      - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | motd"
+
+      - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | Check if /etc/update-motd.d/100-Welcome exists"
+        ansible.builtin.stat:
+          path: /etc/update-motd.d/100-Welcome
+          register: motd_welcome_file
+
+      - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | Create custom motd at /etc/update-motd.d/100-Welcome if not present"
         ansible.builtin.template:
             src: etc/motd.j2
-            dest: /etc/motd
+            dest: /etc/update-motd.d/100-Welcome
+            mode: '0755'
+            owner: root
+            group: root
+        when: not motd_welcome_file.stat.exists
 
-      - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | disable dynamic_motd"
+      - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | Disable dynamic_motd for SSH and console"
         ansible.builtin.lineinfile:
-            path: /etc/pam.d/sshd
-            regexp: "{{ item.regexp }}"
-            line: "{{ item.line }}"
+            path: "{{ item }}"
+            regexp: "{{ pam_motd_regexp }}"
+            line: "{{ pam_motd_line }}"
         loop:
-            - { regexp: 'session\s+optional\s+pam_motd.so\s+motd=/run/motd.dynamic', line: '# 1\' }
-            - { regexp: 'session\s+optional\s+pam_motd.so noupdate', line: '# 1\' }
-            - { regexp: '# Pam_motd.so diabled for CIS benchmark', line: '# Pam_motd.so diabled for CIS benchmark' }
-        when:  cis_ubuntu2004_disable_dynamic_motd
+            - /etc/pam.d/sshd
+            - /etc/pam.d/login
+        vars:
+            pam_motd_regexp: 'session\s+optional\s+pam_motd.so(\s+motd=/run/motd.dynamic| noupdate)?'
+            pam_motd_line: '# Pam_motd.so disabled for CIS benchmark'
+        when: cis_ubuntu2004_disable_dynamic_motd
   when:
       -  cis_ubuntu2004_rule_1_7_1
   tags:
