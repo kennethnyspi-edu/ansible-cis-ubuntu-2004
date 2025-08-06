@@ -1076,7 +1076,7 @@
       - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | Check if /etc/update-motd.d/100-Welcome exists"
         ansible.builtin.stat:
           path: /etc/update-motd.d/100-Welcome
-          register: motd_welcome_file
+        register: motd_welcome_file
 
       - name: "SECTION1 | 1.7.1 | Ensure message of the day is configured properly | Create custom motd at /etc/update-motd.d/100-Welcome if not present"
         ansible.builtin.template:
