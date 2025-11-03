@@ -90,7 +90,7 @@ cis_ubuntu2004_rule_2_2_5: true
 cis_ubuntu2004_rule_2_2_6: true
 cis_ubuntu2004_rule_2_2_7: true
 cis_ubuntu2004_rule_2_2_8: true
-cis_ubuntu2004_rule_2_2_9: true
+cis_ubuntu2004_rule_2_2_9: false  ## Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_2_10: true
 cis_ubuntu2004_rule_2_2_11: true
 cis_ubuntu2004_rule_2_2_12: true
@@ -104,7 +104,7 @@ cis_ubuntu2004_rule_2_3_1: true
 cis_ubuntu2004_rule_2_3_2: true
 cis_ubuntu2004_rule_2_3_3: true
 cis_ubuntu2004_rule_2_3_4: true
-cis_ubuntu2004_rule_2_3_5: true
+cis_ubuntu2004_rule_2_3_5: false  # Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_3_6: true
 cis_ubuntu2004_rule_2_4: true
 
