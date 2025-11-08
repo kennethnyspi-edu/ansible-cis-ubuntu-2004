@@ -37,9 +37,9 @@ cis_ubuntu2004_rule_1_1_10: true # Disable USB Storage
 
 cis_ubuntu2004_rule_1_2_1: true
 cis_ubuntu2004_rule_1_2_2: true
-cis_ubuntu2004_rule_1_3_1: true
-cis_ubuntu2004_rule_1_3_2: true
-cis_ubuntu2004_rule_1_3_3: true
+cis_ubuntu2004_rule_1_3_1: false # manual -- Disabled by Kenneth Masis
+cis_ubuntu2004_rule_1_3_2: false # manual -- Disabled by Kenneth Masis
+cis_ubuntu2004_rule_1_3_3: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_1_4_1: true
 cis_ubuntu2004_rule_1_4_2: true
 cis_ubuntu2004_rule_1_4_3: true
@@ -72,13 +72,13 @@ cis_ubuntu2004_rule_1_8_10: true
 # Section 2 Fixes
 # Section 2 is Services (Special Purpose Services, and service clients)
 cis_ubuntu2004_rule_2_1_1_1: true
-cis_ubuntu2004_rule_2_1_2_1: true
+cis_ubuntu2004_rule_2_1_2_1: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_1_2_2: true
 cis_ubuntu2004_rule_2_1_2_3: true
 cis_ubuntu2004_rule_2_1_3_1: true
-cis_ubuntu2004_rule_2_1_3_2: true
+cis_ubuntu2004_rule_2_1_3_2: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_1_4_1: true
-cis_ubuntu2004_rule_2_1_4_2: true
+cis_ubuntu2004_rule_2_1_4_2: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_1_4_3: true
 cis_ubuntu2004_rule_2_1_4_4: true
 
@@ -86,7 +86,7 @@ cis_ubuntu2004_rule_2_2_1: true
 cis_ubuntu2004_rule_2_2_2: true
 cis_ubuntu2004_rule_2_2_3: true
 cis_ubuntu2004_rule_2_2_4: true
-cis_ubuntu2004_rule_2_2_5: true
+cis_ubuntu2004_rule_2_2_5: false  ## Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_2_6: true
 cis_ubuntu2004_rule_2_2_7: true
 cis_ubuntu2004_rule_2_2_8: true
@@ -106,7 +106,7 @@ cis_ubuntu2004_rule_2_3_3: true
 cis_ubuntu2004_rule_2_3_4: true
 cis_ubuntu2004_rule_2_3_5: false  # Disabled by Kenneth Masis
 cis_ubuntu2004_rule_2_3_6: true
-cis_ubuntu2004_rule_2_4: true
+cis_ubuntu2004_rule_2_4: false # manual -- Disabled by Kenneth Masis
 
 # Section 3 Fixes
 # Section 3 is Network Configuration (Disable Unused Networks, Network Parameters (Host Only), Network Parameters (Host and Router), Uncommon Network Protocols, and Firewall Configuration)
@@ -135,19 +135,19 @@ cis_ubuntu2004_rule_3_4_4: true
 # ufw
 cis_ubuntu2004_rule_3_4_1_1: true
 cis_ubuntu2004_rule_3_4_1_2: true
-cis_ubuntu2004_rule_3_4_1_3: true
+cis_ubuntu2004_rule_3_4_1_3: false  # Disabled by Kenneth Masis
 cis_ubuntu2004_rule_3_4_1_4: true
-cis_ubuntu2004_rule_3_4_1_5: true
+cis_ubuntu2004_rule_3_4_1_5: false  # Disabled by Kenneth Masis
 cis_ubuntu2004_rule_3_4_1_6: true
 cis_ubuntu2004_rule_3_4_1_7: true
 # nftables
 cis_ubuntu2004_rule_3_4_2_1: true
 cis_ubuntu2004_rule_3_4_2_2: true
-cis_ubuntu2004_rule_3_4_2_3: true
+cis_ubuntu2004_rule_3_4_2_3: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_3_4_2_4: true
 cis_ubuntu2004_rule_3_4_2_5: true
 cis_ubuntu2004_rule_3_4_2_6: true
-cis_ubuntu2004_rule_3_4_2_7: true
+cis_ubuntu2004_rule_3_4_2_7: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_3_4_2_8: true
 cis_ubuntu2004_rule_3_4_2_9: true
 cis_ubuntu2004_rule_3_4_2_10: true
@@ -157,7 +157,7 @@ cis_ubuntu2004_rule_3_4_3_1_2: true
 cis_ubuntu2004_rule_3_4_3_1_3: true
 cis_ubuntu2004_rule_3_4_3_2_1: true
 cis_ubuntu2004_rule_3_4_3_2_2: true
-cis_ubuntu2004_rule_3_4_3_2_3: true
+cis_ubuntu2004_rule_3_4_3_2_3: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_3_4_3_2_4: true
 cis_ubuntu2004_rule_3_4_3_3_1: true
 cis_ubuntu2004_rule_3_4_3_3_2: true
@@ -208,7 +208,7 @@ cis_ubuntu2004_rule_4_4_1: true
 cis_ubuntu2004_rule_4_4_2: true
 cis_ubuntu2004_rule_4_4_3: true
 cis_ubuntu2004_rule_4_4_4: true
-cis_ubuntu2004_rule_4_4_5: true
+cis_ubuntu2004_rule_4_4_5: false # manual -- Disabled by Kenneth Masis
 
 cis_ubuntu2004_rule_4_5_1_1: true
 cis_ubuntu2004_rule_4_5_1_2: true
@@ -230,24 +230,24 @@ cis_ubuntu2004_rule_4_5_7: true
 
 # journald
 cis_ubuntu2004_rule_5_1_1_1_1: true
-cis_ubuntu2004_rule_5_1_1_1_2: true
-cis_ubuntu2004_rule_5_1_1_1_3: true
+cis_ubuntu2004_rule_5_1_1_1_2: false # manual -- Disabled by Kenneth Masis
+cis_ubuntu2004_rule_5_1_1_1_3: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_5_1_1_1_4: true
 cis_ubuntu2004_rule_5_1_1_2: true
 cis_ubuntu2004_rule_5_1_1_3: true
 cis_ubuntu2004_rule_5_1_1_4: true
-cis_ubuntu2004_rule_5_1_1_5: true
-cis_ubuntu2004_rule_5_1_1_6: true
-cis_ubuntu2004_rule_5_1_1_7: true
+cis_ubuntu2004_rule_5_1_1_5: false # manual -- Disabled by Kenneth Masis
+cis_ubuntu2004_rule_5_1_1_6: false # manual -- Disabled by Kenneth Masis
+cis_ubuntu2004_rule_5_1_1_7: false # manual -- Disabled by Kenneth Masis
 
 # rsyslog
 
 cis_ubuntu2004_rule_5_1_2_1: true
 cis_ubuntu2004_rule_5_1_2_2: true
-cis_ubuntu2004_rule_5_1_2_3: true
+cis_ubuntu2004_rule_5_1_2_3: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_5_1_2_4: true
-cis_ubuntu2004_rule_5_1_2_5: true
-cis_ubuntu2004_rule_5_1_2_6: true
+cis_ubuntu2004_rule_5_1_2_5: false # manual -- Disabled by Kenneth Masis
+cis_ubuntu2004_rule_5_1_2_6: false # manual -- Disabled by Kenneth Masis
 cis_ubuntu2004_rule_5_1_2_7: true
 
 cis_ubuntu2004_rule_5_1_3: true
@@ -307,9 +307,9 @@ cis_ubuntu2004_rule_6_1_7: true
 cis_ubuntu2004_rule_6_1_8: true
 cis_ubuntu2004_rule_6_1_9: true
 cis_ubuntu2004_rule_6_1_10: true
-cis_ubuntu2004_rule_6_1_11: true
+cis_ubuntu2004_rule_6_1_11: false # Disabled by Kenneth Masis
 cis_ubuntu2004_rule_6_1_12: true
-cis_ubuntu2004_rule_6_1_13: true
+cis_ubuntu2004_rule_6_1_13: false # manual -- Disabled by Kenneth Masis
 
 cis_ubuntu2004_rule_6_2_1: true
 cis_ubuntu2004_rule_6_2_2: true
