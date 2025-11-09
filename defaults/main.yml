@@ -692,14 +692,14 @@ cis_ubuntu2004_protected_services:
   - zabbix-server
 
 cis_ubuntu2004_role_protected_services:
-  web:
+  web_profile:
     - apache2
     - containerd
     - nginx
     - php*-fpm
     - mariadb
     - mysql
-  db:
+  database_profile:
     - mariadb
     - mysql
     - postgresql

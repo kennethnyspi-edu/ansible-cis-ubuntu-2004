@@ -49,6 +49,7 @@
   when:
     - outer_item.apt is defined
     - outer_item.remove | bool
+    - outer_item.apt | difference(cis_ubuntu2004_effective_protected_services | default(cis_ubuntu2004_protected_services)) | length > 0
   block:
     - name: "SECTION-X | SUB-TASK | Ensure services are not in use or purged | purge candidate info"
       ansible.builtin.debug:
@@ -58,5 +59,6 @@
         name: "{{ outer_item.apt }}"
         state: absent
         purge: true
-      when:
-        - outer_item.apt | difference(cis_ubuntu2004_effective_protected_services | default(cis_ubuntu2004_protected_services)) | length > 0
+      register: purge_result
+      failed_when: false
+      ignore_errors: true
